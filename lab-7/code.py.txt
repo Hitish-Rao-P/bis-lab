@@ -1,0 +1,43 @@
+import numpy as np
+
+def objective_function(x):
+    return (x - 3)**2
+
+def get_neighbors(arr, index):
+    left = arr[(index - 1) % len(arr)]
+    center = arr[index]
+    right = arr[(index + 1) % len(arr)]
+    return [left, center, right]
+
+def parallel_cellular_optimization(grid_size, num_iterations):
+    # Initialize cells with random values in range [-10, 10]
+    cells = np.random.uniform(-10, 10, grid_size)
+    best_solution = None
+    best_fitness = float('inf')
+
+    for _ in range(num_iterations):
+        new_cells = np.copy(cells)
+        for i in range(grid_size):
+            neighbors = get_neighbors(cells, i)
+            fitness_values = [objective_function(x) for x in neighbors]
+            best_neighbor_index = np.argmin(fitness_values)
+            best_neighbor_value = neighbors[best_neighbor_index]
+            # Update cell value by moving halfway towards best neighbor
+            new_cells[i] = (cells[i] + best_neighbor_value) / 2
+
+        cells = new_cells
+
+        # Track best solution
+        fitness_all = [objective_function(x) for x in cells]
+        min_fitness_idx = np.argmin(fitness_all)
+        if fitness_all[min_fitness_idx] < best_fitness:
+            best_fitness = fitness_all[min_fitness_idx]
+            best_solution = cells[min_fitness_idx]
+
+    return best_solution, best_fitness
+
+# Example usage
+grid_size = 10
+num_iterations = 50
+best_x, best_val = parallel_cellular_optimization(grid_size, num_iterations)
+print(f"Best solution found: x = {best_x}, f(x) = {best_val}")
